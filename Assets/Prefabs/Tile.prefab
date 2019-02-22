@@ -94,8 +94,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Neighbours: []
-  image: {fileID: 0}
-  mySpriteImages:
+  MySpriteImages:
   - {fileID: 21300000, guid: 295f10032c7474d428b03beed08563e1, type: 3}
   - {fileID: 21300000, guid: 7a316f4c06a75974db97da7ea5cc4fed, type: 3}
   - {fileID: 21300000, guid: 0229ef88254a3ef44b2d6826a822f8d7, type: 3}
@@ -104,6 +103,12 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e2b03e8375605e245aa150fc33c19a8b, type: 3}
   - {fileID: 21300000, guid: 006e015e06ce4dd4f8f4c695b6cd18b9, type: 3}
   - {fileID: 21300000, guid: 7d5e2dfeaabe86d45947c9731dd5820f, type: 3}
+  PreviousTile: {fileID: 0}
+  BelowTile: {fileID: 0}
+  isLeftEdge: 0
+  isBottomEdge: 0
+  isSelected: 0
+  selector: {fileID: 0}
 --- !u!61 &1147207883829543544
 BoxCollider2D:
   m_ObjectHideFlags: 0
