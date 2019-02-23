@@ -45,29 +45,42 @@ public class BoardManager : MonoBehaviour
 
     void FindNeighbours()
     {
+        //Loop through all Tiles
         for (int i = 0; i < tiles.Count; i++)
         {
+            //If it's not a Left edge tile
             if (!tiles[i].isLeftEdge)
             {
+                //Set its left tile to one element to its left
                 tiles[i].LeftTile = tiles[i - 1];
             }
 
+            //If its not a bottom edge tile
             if (!tiles[i].isBottomEdge)
             {
+                //Set its bottom tile to the tile below it
                 tiles[i].BelowTile = tiles[i - GridWidth];
             }
         }
+
+        //Loop through all tiles
         foreach (Tile t in tiles)
         {
+            //If it has a tile on its left
             if(t.LeftTile != null)
             {
+                //Add the left tile as a neighbour
                 t.AddNeighbour(t.LeftTile);
+                //Add this tile as the left tile's neighbour
                 t.LeftTile.AddNeighbour(t);
             }
 
+            //If it has a tile below it
             if(t.BelowTile != null)
             {
+                //Add the tile below as a neighbour
                 t.AddNeighbour(t.BelowTile);
+                //Add thhis tile as the below tile's neighbour
                 t.BelowTile.AddNeighbour(t);
             } 
         }
@@ -75,13 +88,16 @@ public class BoardManager : MonoBehaviour
 
     public void TileSwap(Tile CurrentTile)
     {
+        Sprite SpriteBuffer;
+        int ValueBuffer;
+
         if (PrevTile == null)
         {
             print("First tile selected");
             PrevTile = CurrentTile;
             CurrentTile.ToggleSelect();
         }
-        else if (PrevTile == CurrentTile)
+        else if (CurrentTile == PrevTile)
         {
             print("Deselecting tile");
             PrevTile = null;
@@ -92,24 +108,36 @@ public class BoardManager : MonoBehaviour
         {
             print("Second tile selected");
             CurrentTile.ToggleSelect();
+
+            //Swap positions of both sprites. It is done this way to maintain the correct neighbours.
+            SpriteBuffer = PrevTile.GetComponent<SpriteRenderer>().sprite;
+            PrevTile.GetComponent<SpriteRenderer>().sprite = CurrentTile.GetComponent<SpriteRenderer>().sprite;
+            CurrentTile.GetComponent<SpriteRenderer>().sprite = SpriteBuffer;
+
+            //Swapping values of both tiles
+            ValueBuffer = PrevTile.value;
+            PrevTile.value = CurrentTile.value;
+            CurrentTile.value = ValueBuffer;
+
+            //Find selected tiles and deselect them
+            ResetBoard();
+            CurrentTile = null;
+            PrevTile = null;
         }
         else
         {
-            print("error");
+            print("Error 80085: Not a valid neighbour.");
         }
+    }
 
-
-        /*else
+    void ResetBoard()
+    {
+        foreach (Tile t in tiles)
         {
-            if (PrevTile.IsNeighbour(CurrentTile))
+            if (t.isSelected)
             {
-
+                t.ToggleSelect();
             }
-            else
-            {
-                PrevTile.ToggleSelect();
-                PrevTile = CurrentTile;
-            }
-        }*/
+        }
     }
 }

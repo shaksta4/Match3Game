@@ -17,6 +17,8 @@ public class Tile : MonoBehaviour
 
     private SpriteRenderer SpriteRenderVar;
 
+    public int value;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -42,6 +44,8 @@ public class Tile : MonoBehaviour
 
         SpriteRenderVar = gameObject.GetComponent<SpriteRenderer>();
         SpriteRenderVar.sprite = MySpriteImages[RandomTileSelector];
+
+        value = RandomTileSelector;
     }
 
     public void AddNeighbour(Tile t)
