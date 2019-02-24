@@ -14,16 +14,23 @@ public class Tile : MonoBehaviour
     public bool isLeftEdge;
     public bool isBottomEdge;
     public bool isSelected;
+    public bool toBeNulled;
 
     private SpriteRenderer SpriteRenderVar;
 
     public int value;
 
-    // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         CreateTile();
     }
+
+    // MIGHT NEED TO USE TO CREATE NEW TILES TO ADD INTO NULLED PLACS
+   /* void Start()
+    {
+        CreateTile();
+    }
+    */
 
     // Update is called once per frame
     void Update()
@@ -38,7 +45,8 @@ public class Tile : MonoBehaviour
         }
     }
 
-    void CreateTile()
+    //Used to create or Recreate tiles
+    public void CreateTile()
     {
         int RandomTileSelector = Random.Range(0, MySpriteImages.Length);
 
@@ -63,6 +71,23 @@ public class Tile : MonoBehaviour
         return false;
     }
 
+    public Tile SwapTile(Tile t)
+    {
+        //Swap positions of both sprites. It is done this way to maintain the correct neighbours.
+        Sprite SpriteBuffer = this.GetComponent<SpriteRenderer>().sprite;
+        this.GetComponent<SpriteRenderer>().sprite = t.GetComponent<SpriteRenderer>().sprite;
+        t.GetComponent<SpriteRenderer>().sprite = SpriteBuffer;
+
+        
+        //Swapping values of both tiles
+        int ValueBuffer = this.value;
+        this.value = t.value;
+        t.value = ValueBuffer;
+
+        return this;
+
+    }
+
     public void ToggleSelect()
     {
         isSelected = !isSelected;
@@ -70,7 +95,7 @@ public class Tile : MonoBehaviour
 
     void OnMouseDown()
     {
-
         GameObject.Find("BoardManager").GetComponent<BoardManager>().TileSwap(this);
+
     }
 }
