@@ -4,195 +4,215 @@ using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
+    public List<Cell> cells = new List<Cell>();
+    public Cell[,] cellsArray;
     public List<Tile> tiles = new List<Tile>();
-    public List<Tile> MatchingSet = new List<Tile>();
-    public List<Tile> AboveTile = new List<Tile>();
 
-    [SerializeField]
-    public Dictionary<string, List<Tile>> BoardRayCasts = new Dictionary<string, List<Tile>>();
+    public List<Tile> MatchingSet = new List<Tile>();
+    public List<Tile> AboveTiles = new List<Tile>();
 
     public int GridWidth;
     public int GridHeight;
+
     public GameObject tilePrefab;
+    public GameObject cell;
+
     public Tile PrevTile;
+    public Tile CurrentTile;
 
     public bool hasMadeTurn = false;
     public bool needReshuffle = false;
-    public bool hasReachedTop = false;
+    public bool isMatched = false;
+
+    public AudioClip MatchSound;
+    public int LastValue = 0; // initial value so its not null
 
     // Start is called before the first frame update
     void Start()
     {
         CreateBoard();
-        FindNeighbours();
-        InitDictionary();
-        CheckBoard();
+        FindCellNeighbours();
+        CopiedFunction();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(hasMadeTurn)
+        CopyCellNeighbourToTile();
+
+        if (hasMadeTurn)
         {
-            CheckBoard(); //Implement something to do after checking board.
-            if(MatchingSet.Count < 1) // If the move does not result in 3 in a row from happening, do something.
-            {
-
-            }
-
-            for (int i = MatchingSet.Count - 1; i >= 0; i--)
-            {
-                if(MatchingSet[i].toBeNulled == false)
-                {
-                    MatchingSet[i].toBeNulled = true;
-                }
-
-                MoveTilesUp(MatchingSet[i], MatchingSet[i].Neighbours);
-
-            }
-            
-
-            /*for(int i= 0; i < MatchingSet.Count; i++)
-            {
-                MatchingSet[i] = null;
-            }*/
-            //Resets MatchingSet
-           // MatchingSet = new List<Tile>();
-            
-            if(hasReachedTop)
-            {
-                MatchingSet = new List<Tile>();
-                hasMadeTurn = false;
-            }
+            //Finds matches.
+            CopiedFunction();
+            hasMadeTurn = false;
         }
-        if(needReshuffle)
+
+        if (isMatched)
+        {
+            SoundManager.instance.PlaySingle(MatchSound);
+            print("There is a match of:"+MatchingSet.Count+" tiles to resolve.");
+
+            foreach (Cell c in cells)
+            {
+                if (c.tile.toBeNulled)
+                {
+                    //AboveTiles.AddRange(c.tile.GetAboveTilesInColumn(cells));
+                    //Get the tile's current value, and create a new tile of a different value.
+                    int ValueToAvoid = c.tile.value;
+
+                    StatsManager.scoreValue += c.tile.tileScore;
+                    //If more than 3 in a row
+                    if(MatchingSet.Count > 3)
+                    {
+                        //Add bonus score
+                        StatsManager.scoreValue += 25;
+                    }
+                    //Create a tile avoiding both values!
+                    c.tile.CreateTile(ValueToAvoid, LastValue);
+                    //print("Creating new tile with the value of "+c.tile.value+". It is a "+c.tile.GetComponent<SpriteRenderer>().sprite.name+" coloured sprite");
+                    LastValue = c.tile.value;
+                }
+            }
+
+            print("------------------------NEXT TURN ------------------------------------");
+
+            isMatched = false;
+            MatchingSet.Clear();
+        }
+
+        if (needReshuffle)
         {
             Reshuffle();
             needReshuffle = false;
-            CheckBoard();
+            CopiedFunction();
         }
-    }
-
-    void MoveTilesUp(Tile TileToMove, List<Tile> NeighbouringSet)
-    {
-        foreach (Tile t in TileToMove.Neighbours)
-        {
-            if (TileToMove.transform.localPosition.x == t.transform.localPosition.x && TileToMove.transform.localPosition.y < t.transform.localPosition.y)
-            {
-                TileToMove.SwapTile(t);
-            }
-            else
-            {
-                hasReachedTop = true;
-            }
-        } 
     }
 
     void CreateBoard()
     {
+        cellsArray = new Cell[GridHeight, GridWidth];
+
         for (int y = 0; y < GridHeight; y++)
         {
             for (int x = 0; x < GridWidth; x++)
             {
-                GameObject g = Instantiate(tilePrefab, new Vector3(x, y, 0), Quaternion.identity) as GameObject;
-                g.transform.parent = gameObject.transform;
-                tiles.Add(g.GetComponent<Tile>());
+                //Create cells, add to list
+                GameObject g1 = Instantiate(cell, new Vector3(x, y, 0), Quaternion.identity) as GameObject;
+                g1.transform.parent = gameObject.transform;
 
-                tiles[GridWidth * y].isLeftEdge = true;
-                if (y == 0)
-                {
-                    tiles[x].isBottomEdge = true;
-                }
+                //Get in list form
+                cells.Add(g1.GetComponent<Cell>());
+                //Get in 2d array form (for manipulation purposes)
+                cellsArray[y,x] = g1.GetComponent<Cell>();
             }
         }
         gameObject.transform.position = new Vector3(-2.5f, -2f, -0.5f);
+
+        //Set each cells xPos and yPos
+        foreach(Cell c in cells)
+        {
+            c.Initialise((int)c.transform.localPosition.x, (int)c.transform.localPosition.y);
+        }
     }
+
+    void CopyCellNeighbourToTile()
+    {
+        foreach (Cell c in cells)
+        {
+            c.tile.Neighbours.Clear();
+
+            foreach (Cell cn in c.Neighbours)
+            {
+                if (!c.tile.Neighbours.Contains(cn.tile))
+                {
+                    c.tile.Neighbours.Add(cn.tile);
+                }
+            }
+        }
+    }
+
 
     void Reshuffle()
     {
         print("Reshuffling tiles!");
 
-        foreach (Tile t in tiles)
+        foreach (Cell c in cells)
         {
-            t.CreateTile();
+            c.tile.CreateTile();
         }
+
+        MatchingSet.Clear();
     }
 
-    void FindNeighbours()
+    void FindCellNeighbours()
     {
         //Loop through all Tiles
-        for (int i = 0; i < tiles.Count; i++)
+        for (int i = 0; i < cells.Count; i++)
         {
             //If it's not a Left edge tile
-            if (!tiles[i].isLeftEdge)
+            if (!cells[i].isLeftEdge)
             {
                 //Set its left tile to one element to its left
-                tiles[i].LeftTile = tiles[i - 1];
+                cells[i].LeftCell = cells[i - 1];
             }
 
             //If its not a bottom edge tile
-            if (!tiles[i].isBottomEdge)
+            if (!cells[i].isBottomEdge)
             {
                 //Set its bottom tile to the tile below it
-                tiles[i].BelowTile = tiles[i - GridWidth];
+                cells[i].BelowCell = cells[i - GridWidth];
             }
         }
 
         //Loop through all tiles
-        foreach (Tile t in tiles)
+        foreach (Cell c in cells)
         {
             //If it has a tile on its left
-            if(t.LeftTile != null)
+            if (c.LeftCell != null)
             {
                 //Add the left tile as a neighbour
-                t.AddNeighbour(t.LeftTile);
+                c.AddNeighbour(c.LeftCell);
                 //Add this tile as the left tile's neighbour
-                t.LeftTile.AddNeighbour(t);
+                c.LeftCell.AddNeighbour(c);
             }
 
             //If it has a tile below it
-            if(t.BelowTile != null)
+            if (c.BelowCell != null)
             {
                 //Add the tile below as a neighbour
-                t.AddNeighbour(t.BelowTile);
-                //Add thhis tile as the below tile's neighbour
-                t.BelowTile.AddNeighbour(t);
-            } 
+                c.AddNeighbour(c.BelowCell);
+                //Add this tile as the below tile's neighbour
+                c.BelowCell.AddNeighbour(c);
+            }
         }
+
+        //CopyCellNeighbourToTile();
     }
 
-    public void TileSwap(Tile CurrentTile)
+    public void TileSelection(Tile CurrentTile)
     {
-        Sprite SpriteBuffer;
-        int ValueBuffer;
-
         if (PrevTile == null)
         {
-            print("First tile selected");
             PrevTile = CurrentTile;
             CurrentTile.ToggleSelect();
         }
         else if (CurrentTile == PrevTile)
         {
-            print("Deselecting tile");
             PrevTile = null;
             CurrentTile.ToggleSelect();
         }
         //If Second clicked tile is neighbour with first clicked tile
         else if (PrevTile.IsNeighbour(CurrentTile))
         {
-            print("Second tile selected");
             CurrentTile.ToggleSelect();
+            PrevTile.SwapTile(CurrentTile);
+            StatsManager.numTurns++;
 
-            //Swap positions of both sprites. It is done this way to maintain the correct neighbours.
-            SpriteBuffer = PrevTile.GetComponent<SpriteRenderer>().sprite;
-            PrevTile.GetComponent<SpriteRenderer>().sprite = CurrentTile.GetComponent<SpriteRenderer>().sprite;
-            CurrentTile.GetComponent<SpriteRenderer>().sprite = SpriteBuffer;
-
-            //Swapping values of both tiles
-            ValueBuffer = PrevTile.value;
-            PrevTile.value = CurrentTile.value;
-            CurrentTile.value = ValueBuffer;
+            //Reset neighbours after swapping. IN UPDATE, IT SETS TILES NEIGHBOURS AGAIN.
+            foreach (Cell c in cells)
+            {
+                c.tile.Neighbours.Clear();
+            }
 
             //Find selected tiles and deselect them
             hasMadeTurn = true;
@@ -202,234 +222,139 @@ public class BoardManager : MonoBehaviour
         }
         else
         {
-            print("Error 80085: Not a valid neighbour.");
+            print("Error: Not a valid neighbour.");
         }
     }
 
-    List<Tile> GetRow(Tile t)
+
+    /* MUST CHANGE THE NAME OF THIS FUNCTION AND LOOK AT AGAIN CAREFULLY ---------------------------------------------------------------------*/
+    void CopiedFunction()
     {
-        List<Tile> myList = new List<Tile>();
-        RaycastHit2D[] ray = Physics2D.RaycastAll(t.transform.localPosition, Vector2.up, (float)GridHeight);
-
-        for(int i = 0; i < ray.Length; i++)
+        for (int y = 0; y < GridHeight; y++)
         {
-            myList.Add(ray[i].collider.GetComponentInParent<Tile>());
-        }
-
-        //print("Row length is: " + myList.Count);
-
-        return myList;
-    }
-
-    List<Tile> GetColumn(Tile t)
-    {
-        List<Tile> myList = new List<Tile>();
-        RaycastHit2D[] ray = Physics2D.RaycastAll(t.transform.localPosition, Vector2.right, (float)GridWidth);
-
-        for (int i = 0; i < ray.Length; i++)
-        {
-            myList.Add(ray[i].collider.GetComponentInParent<Tile>());
-        }
-
-        //print("Column length is: " + myList.Count);
-
-        return myList;
-    }
-
-    /*List<Tile> GetTilesAbove(Tile t)
-    {
-        List<Tile> myList = new List<Tile>();
-        RaycastHit2D[] ray = Physics2D.RaycastAll(t.transform.localPosition, Vector2.up, (float)GridHeight);
-        int distance;
-
-        for(int i=0; i < ray.Length; i++)
-        {
-            if(ray[1].collider.GetComponentInParent<Tile>().toBeNulled)
+            for (int x = 2; x < GridWidth; x++)
             {
-                distance = 1;
-            }
-            else
-            {
-                distance = 
-            }
-        }
-
-    }*/
-
-    void InitDictionary()
-    {
-        int ColCount = 0;
-        int RowCount = 0;
-
-        foreach (Tile t in tiles)
-        {
-            if (t.isBottomEdge)
-            {
-                ColCount++;
-                BoardRayCasts.Add("col" + ColCount, GetRow(t));
-            }
-            if (t.isLeftEdge)
-            {
-                RowCount++;
-                BoardRayCasts.Add("row" + RowCount, GetColumn(t));
-            }
-        }
-    }
-
-    void FindMatches(List<Tile> myList)
-    {
-        //print("finding matches...");
-        for(int i = 0; i < myList.Count-2; i++)
-        {
-            if (myList[i].value == myList[i + 1].value && myList[i].value == myList[i + 2].value)
-            {
-                print("There is a set of 3 starting from: " + myList[i].transform.localPosition + " Ending at: " + myList[i + 2].transform.localPosition);
-
-                if(hasMadeTurn)
+                if (cellsArray[x,y].tile.value == cellsArray[x-1,y].tile.value && cellsArray[x,y].tile.value == cellsArray[x-2,y].tile.value)
                 {
-                    MatchingSet.Add(myList[i]);
-                    MatchingSet.Add(myList[i + 1]);
-                    MatchingSet.Add(myList[i + 2]);
-                }
-
-                //If the row is not a consequence of the player making 3 in a row, reshuffle.
-                if (!hasMadeTurn)
-                {
-                    needReshuffle = true;
-                }
-            }
-        }
-    }
-
-    void CheckBoard()
-    {
-        print("Checking rows");
-
-        FindMatches(BoardRayCasts["row1"]);
-        FindMatches(BoardRayCasts["row2"]);
-        FindMatches(BoardRayCasts["row3"]);
-        FindMatches(BoardRayCasts["row4"]);
-        FindMatches(BoardRayCasts["row5"]);
-        FindMatches(BoardRayCasts["row6"]);
-
-        print("Checking Columns");
-
-        FindMatches(BoardRayCasts["col1"]);
-        FindMatches(BoardRayCasts["col2"]);
-        FindMatches(BoardRayCasts["col3"]);
-        FindMatches(BoardRayCasts["col4"]);
-        FindMatches(BoardRayCasts["col5"]);
-        FindMatches(BoardRayCasts["col6"]);
-    }
-
-    /*
-    void FindMatchesRecursive(Tile t, List<Tile> Matches)
-    {
-        foreach(Tile tn in t.Neighbours)
-        {
-            //Horizontal
-            if(t.value == tn.value && !Matches.Contains(tn) && t.transform.localPosition.y == tn.transform.localPosition.y)
-            {
-                Matches.Add(t);
-                FindMatchesRecursive(tn, Matches);
-            }
-            //Vertical
-            else if(t.value == tn.value && !Matches.Contains(tn) && t.transform.localPosition.x == tn.transform.localPosition.x)
-            {
-                Matches.Add(t);
-                FindMatchesRecursive(tn, Matches);
-            }
-            else
-            {
-                return;
-            }
-        }
-        return;
-    }*/
-
-
-
-    /*
-    List<Tile> FindMatches(List<Tile> matches)
-    {
-        List<Tile> VertMatches = new List<Tile>();
-        List<Tile> HoriMatches = new List<Tile>();
-
-        //For each tile on board
-        foreach (Tile t in tiles)
-        {
-            //For each neighbour for each tile
-            foreach (Tile tn in t.Neighbours)
-            {
-                //If the tile's value is = to the neighbours value
-                if(t.value == tn.value)
-                {
-                    // ---------------- Searching horizontally ------------------
-                    if (t.transform.localPosition.y == tn.transform.localPosition.y)
+                    // Found 3 in a row!
+                    // Clear any extra tiles in the row that match
+                    for (int i = x + 1; i < GridWidth; i++)
                     {
-                        foreach (Tile tnn in tn.Neighbours)
+                        if (cellsArray[i,y].tile.value == cellsArray[x,y].tile.value)
                         {
-                            //If values are equal, they are on the same axis (i.e. horizontal), and neighbours position is NOT the same as the original tile.
-                            if ((tn.value == tnn.value) && (tn.transform.localPosition.y == tnn.transform.localPosition.y) && (tnn.transform.localPosition.x != t.transform.localPosition.x))
+                            cellsArray[i, y].tile.toBeNulled = true;
+
+                            if (!MatchingSet.Contains(cellsArray[i, y].tile))
                             {
-                                if (!HoriMatches.Contains(t))
-                                {
-                                    HoriMatches.Add(t); //3 in list
-                                }
+                                MatchingSet.Add(cellsArray[i, y].tile);
                             }
+                        }
+                        else
+                        {
+                            // stop checking if it did not match
+                            break;
+                        } // if-else
+                    } // for i
+                      // Clear the 3 . . .
+                    if (hasMadeTurn)
+                    {
+                        cellsArray[x, y].tile.toBeNulled = true;
+                        cellsArray[x - 1, y].tile.toBeNulled = true;
+                        cellsArray[x - 2, y].tile.toBeNulled = true;
+
+                        if (!MatchingSet.Contains(cellsArray[x, y].tile))
+                        {
+                            MatchingSet.Add(cellsArray[x, y].tile);
+                        }
+
+                        if (!MatchingSet.Contains(cellsArray[x - 1, y].tile))
+                        {
+                            MatchingSet.Add(cellsArray[x - 1, y].tile);
+                        }
+
+                        if (!MatchingSet.Contains(cellsArray[x - 2, y].tile))
+                        {
+                            MatchingSet.Add(cellsArray[x - 2, y].tile);
                         }
                     }
 
-                    // ---------------- Searching Vertically ------------------
-                    else if (t.transform.localPosition.x == tn.transform.localPosition.x)
+                    if(!hasMadeTurn)
                     {
-                        foreach (Tile tnn in tn.Neighbours)
+                        needReshuffle = true;
+                    }
+                } // if match-3
+            } // for x
+        } // for y
+
+        // Check for vertical 3-in-a-row
+        for (int x = 0; x < GridWidth; x++)
+        {
+            for (int y = 2; y < GridHeight; y++)
+            {
+                if (cellsArray[x,y].tile.value == cellsArray[x,y - 1].tile.value &&cellsArray[x,y].tile.value == cellsArray[x,y - 2].tile.value)
+                {
+                    // Found 3 in a row!
+                    // Clear any extra tiles in the column that match
+                    for (int i = y + 1; i < GridHeight; i++)
+                    {
+                        if (cellsArray[x,i].tile.value == cellsArray[x,y].tile.value)
                         {
-                            if ((tn.value == tnn.value) && (tn.transform.localPosition.x == tnn.transform.localPosition.x) && (tnn.transform.localPosition.y != t.transform.localPosition.y))
+                            cellsArray[x, i].tile.toBeNulled = true;
+
+                            if (!MatchingSet.Contains(cellsArray[x, i].tile))
                             {
-                                if(!VertMatches.Contains(t))
-                                {
-                                    VertMatches.Add(t); //3 in list
-                                }
+                                MatchingSet.Add(cellsArray[x, i].tile);
                             }
                         }
+                        else
+                        {
+                            // stop checking if it did not match
+                            break;
+                        } // if-else
+                    } // for i
+
+                    cellsArray[x, y].tile.toBeNulled = true;
+                    cellsArray[x, y-1].tile.toBeNulled = true;
+                    cellsArray[x, y-2].tile.toBeNulled = true;
+
+                    if (!MatchingSet.Contains(cellsArray[x, y].tile))
+                    {
+                        MatchingSet.Add(cellsArray[x, y].tile);
                     }
-                }
-            }
-        }
 
-        foreach(Tile t in HoriMatches)
+                    if (!MatchingSet.Contains(cellsArray[x, y - 1].tile))
+                    {
+                        MatchingSet.Add(cellsArray[x, y - 1].tile);
+                    }
+
+                    if (!MatchingSet.Contains(cellsArray[x, y - 2].tile))
+                    {
+                        MatchingSet.Add(cellsArray[x, y - 2].tile);
+                    }
+
+                    if (!hasMadeTurn)
+                    {
+                        needReshuffle = true;
+                    }
+
+                } // if match-3
+            } // for y
+        } // for x
+
+        if(MatchingSet.Count > 0 && hasMadeTurn)
         {
-            int count = 0;
-            count++;
-            print("The position of Tile " + count + " is: " + t.transform.localPosition);
+            isMatched = true;
         }
-
-        foreach (Tile t in VertMatches)
-        {
-            int count = 0;
-            count++;
-            print("The position of Tile "+count+" is: "+t.transform.localPosition);
-        }
-
-        print(HoriMatches.Count);
-        print(VertMatches.Count);
-
-        //CURRENTLY RETURNING ONLY VERTICALLY MATCHED TILES
-        return HoriMatches;
     }
-    */
-
 
     void ResetBoard()
     {
-        foreach (Tile t in tiles)
+        foreach (Cell c in cells)
         {
-            if (t.isSelected)
+            if (c.tile.isSelected)
             {
-                t.ToggleSelect();
+                c.tile.ToggleSelect();
             }
         }
-        //hasMadeTurn = false;
     }
 }

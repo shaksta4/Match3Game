@@ -53,14 +53,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Rotary Heart\SerializableDictionary\DrawKeyAsPropertyAttribute.cs" />
-     <Compile Include="Assets\Rotary Heart\SerializableDictionary\Example\DataBaseExample.cs" />
-     <Compile Include="Assets\Rotary Heart\SerializableDictionary\Example\NestedDB.cs" />
-     <Compile Include="Assets\Rotary Heart\SerializableDictionary\IDAttribute.cs" />
-     <Compile Include="Assets\Rotary Heart\SerializableDictionary\References\RequiredReferences.cs" />
-     <Compile Include="Assets\Rotary Heart\SerializableDictionary\ReorderableList\ReorderableList.cs" />
-     <Compile Include="Assets\Rotary Heart\SerializableDictionary\SerializableDictionaryBase.cs" />
      <Compile Include="Assets\Scripts\BoardManager.cs" />
+     <Compile Include="Assets\Scripts\Cell.cs" />
+     <Compile Include="Assets\Scripts\GameController.cs" />
+     <Compile Include="Assets\Scripts\MuteButton.cs" />
+     <Compile Include="Assets\Scripts\SceneController.cs" />
+     <Compile Include="Assets\Scripts\SoundManager.cs" />
+     <Compile Include="Assets\Scripts\StatsManager.cs" />
      <Compile Include="Assets\Scripts\Tile.cs" />
  <Reference Include="Unity.TextMeshPro.Editor">
  <HintPath>D:/Users/Shakeel/Documents/MyTona Game/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>

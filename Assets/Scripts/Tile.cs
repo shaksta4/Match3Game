@@ -7,14 +7,15 @@ public class Tile : MonoBehaviour
     public List<Tile> Neighbours = new List<Tile>();
     public Sprite[] MySpriteImages = new Sprite[8];
 
-    public Tile LeftTile;
-    public Tile BelowTile;
-    public Tile PrevTile;
+    public Sprite HighlightSprite;
 
-    public bool isLeftEdge;
-    public bool isBottomEdge;
+    GameObject highlighter;
+
     public bool isSelected;
     public bool toBeNulled;
+    public bool canFall;
+
+    public int tileScore = 15;
 
     private SpriteRenderer SpriteRenderVar;
 
@@ -32,21 +33,34 @@ public class Tile : MonoBehaviour
     }
     */
 
-    // Update is called once per frame
+    // Update is called once per frame [TILE]
     void Update()
     {
         if (isSelected)
         {
-            gameObject.GetComponent<SpriteRenderer>().color = Color.red;
+            //gameObject.GetComponent<SpriteRenderer>().color = Color.gray;
+            if (highlighter == null)
+            {
+                highlighter = new GameObject();
+                highlighter.AddComponent<SpriteRenderer>();
+                highlighter.GetComponent<SpriteRenderer>().sprite = HighlightSprite;
+                highlighter.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.25f);// Color.gray;
+                highlighter.transform.SetPositionAndRotation(this.transform.position, Quaternion.identity);
+            }
         }
         else
         {
-            gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+            //gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+            if(highlighter != null)
+            {
+                Destroy(highlighter);
+                highlighter = null;
+            }
         }
     }
 
-    //Used to create or Recreate tiles
-    public void CreateTile()
+    //Used to create or Recreate tiles [TILE] 
+    public void CreateTile() 
     {
         int RandomTileSelector = Random.Range(0, MySpriteImages.Length);
 
@@ -54,6 +68,26 @@ public class Tile : MonoBehaviour
         SpriteRenderVar.sprite = MySpriteImages[RandomTileSelector];
 
         value = RandomTileSelector;
+
+        toBeNulled = false;
+    }
+
+    public void CreateTile(int CurrentValue, int PreviousValue)
+    {
+        int RandomTileSelector = Random.Range(0, MySpriteImages.Length-1);
+
+        //If its gonna make the same colour tile as what was previous there OR if its going to create the same colour tile as the previously created one.
+        if(CurrentValue == RandomTileSelector || PreviousValue == RandomTileSelector)
+        {
+            RandomTileSelector++;
+        }
+
+        SpriteRenderVar = gameObject.GetComponent<SpriteRenderer>();
+        SpriteRenderVar.sprite = MySpriteImages[RandomTileSelector];
+
+        value = RandomTileSelector;
+
+        toBeNulled = false;
     }
 
     public void AddNeighbour(Tile t)
@@ -71,21 +105,72 @@ public class Tile : MonoBehaviour
         return false;
     }
 
-    public Tile SwapTile(Tile t)
+    public List<Tile> GetAboveTilesInColumn(List<Cell> cells)
     {
-        //Swap positions of both sprites. It is done this way to maintain the correct neighbours.
-        Sprite SpriteBuffer = this.GetComponent<SpriteRenderer>().sprite;
-        this.GetComponent<SpriteRenderer>().sprite = t.GetComponent<SpriteRenderer>().sprite;
-        t.GetComponent<SpriteRenderer>().sprite = SpriteBuffer;
+        List<Tile> myList = new List<Tile>();
 
-        
-        //Swapping values of both tiles
-        int ValueBuffer = this.value;
-        this.value = t.value;
-        t.value = ValueBuffer;
+        foreach(Cell c in cells)
+        {
+            if (c.tile.transform.position.x == this.transform.position.x && c.tile.transform.position.y > this.transform.position.y)
+            {
+                if(!c.tile.toBeNulled)
+                {
+                    myList.Add(c.tile);
+                }
+            }
+        }
 
-        return this;
+        return myList;
+    }
 
+
+    //tn.transform.position.x == t.transform.position.x && tn.transform.position.y > t.transform.position.y
+
+    public void CheckCanFall()
+    {
+        foreach(Tile t in Neighbours)
+        {
+            if(t.toBeNulled)
+            {
+                if(t.transform.position.x == this.transform.position.x)
+                {
+                    if(t.transform.position.y < this.transform.position.y)
+                    {
+                        canFall = true;
+                    }
+                    else
+                    {
+                        canFall = false;
+                    }
+                }
+            }
+        }
+    }
+
+    public void SwapTile(Tile CurrentTile)
+    {
+        Vector3 PositionBuffer;
+        Transform ParentBuffer;
+        Cell PrevCell;
+        Cell CurrentCell;
+        Tile buffer;
+
+        //print("Moving this tile from " + this.GetComponentInParent<Cell>().transform.localPosition + " to " + CurrentTile.GetComponentInParent<Cell>().transform.localPosition);
+        //Swap positions
+        PositionBuffer = this.transform.position;
+        this.transform.SetPositionAndRotation(CurrentTile.transform.position, Quaternion.identity);
+        CurrentTile.transform.SetPositionAndRotation(PositionBuffer, Quaternion.identity);
+
+        //Swap parents (position wise)
+        ParentBuffer = this.transform.parent;
+        this.transform.SetParent(CurrentTile.transform.parent);
+        CurrentTile.transform.SetParent(ParentBuffer);
+
+        PrevCell = this.GetComponentInParent<Cell>();
+        CurrentCell = CurrentTile.GetComponentInParent<Cell>();
+        buffer = PrevCell.tile;
+        PrevCell.tile = CurrentCell.tile;
+        CurrentCell.tile = buffer;
     }
 
     public void ToggleSelect()
@@ -95,7 +180,6 @@ public class Tile : MonoBehaviour
 
     void OnMouseDown()
     {
-        GameObject.Find("BoardManager").GetComponent<BoardManager>().TileSwap(this);
-
+        GameObject.Find("BoardManager").GetComponent<BoardManager>().TileSelection(this);
     }
 }

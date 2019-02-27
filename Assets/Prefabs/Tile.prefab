@@ -95,20 +95,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Neighbours: []
   MySpriteImages:
-  - {fileID: 21300000, guid: 295f10032c7474d428b03beed08563e1, type: 3}
-  - {fileID: 21300000, guid: 7a316f4c06a75974db97da7ea5cc4fed, type: 3}
-  - {fileID: 21300000, guid: 0229ef88254a3ef44b2d6826a822f8d7, type: 3}
-  - {fileID: 21300000, guid: b9e5716a20c17f449a72a86d0d478318, type: 3}
-  - {fileID: 21300000, guid: 9916a247a6e595644b606ccb8c65284b, type: 3}
-  - {fileID: 21300000, guid: e2b03e8375605e245aa150fc33c19a8b, type: 3}
-  - {fileID: 21300000, guid: 006e015e06ce4dd4f8f4c695b6cd18b9, type: 3}
-  - {fileID: 21300000, guid: 7d5e2dfeaabe86d45947c9731dd5820f, type: 3}
-  LeftTile: {fileID: 0}
-  BelowTile: {fileID: 0}
-  PrevTile: {fileID: 0}
-  isLeftEdge: 0
-  isBottomEdge: 0
+  - {fileID: 21300000, guid: 37876217a4d84bd45ab154ee69355947, type: 3}
+  - {fileID: 21300000, guid: 5da5a982698e033448838dece481413f, type: 3}
+  - {fileID: 21300000, guid: b48fa43cf9cf2de46b436af6f489a6bb, type: 3}
+  - {fileID: 21300000, guid: 3064416a5af52e04ea51e6aa55bafeb7, type: 3}
+  - {fileID: 21300000, guid: 2c6063536ebb5a540be3689b78474e07, type: 3}
+  - {fileID: 21300000, guid: 3887d5ad1fe76ed4ea492eba56fa48ba, type: 3}
+  HighlightSprite: {fileID: 21300000, guid: b6958833da6d55e46829df9b81fe245f, type: 3}
   isSelected: 0
+  toBeNulled: 0
+  canFall: 0
   value: 0
 --- !u!61 &1147207883829543544
 BoxCollider2D:
@@ -134,5 +130,5 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1.03, y: 1.06}
+  m_Size: {x: 0.8, y: 0.8}
   m_EdgeRadius: 0
