@@ -166,6 +166,7 @@ public class Tile : MonoBehaviour
         this.transform.SetParent(CurrentTile.transform.parent);
         CurrentTile.transform.SetParent(ParentBuffer);
 
+        //Swap actual parent cells (Script wise)
         PrevCell = this.GetComponentInParent<Cell>();
         CurrentCell = CurrentTile.GetComponentInParent<Cell>();
         buffer = PrevCell.tile;

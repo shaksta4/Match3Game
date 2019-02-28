@@ -937,6 +937,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cells: []
   tiles: []
+  ListOfPossible: []
   MatchingSet: []
   AboveTiles: []
   GridWidth: 6
@@ -945,10 +946,13 @@ MonoBehaviour:
     type: 3}
   cell: {fileID: 2181928176017393715, guid: ad417f9eda9cc2c4cbf5da623910440e, type: 3}
   PrevTile: {fileID: 0}
-  CurrentTile: {fileID: 0}
+  PrevSelectedTile: {fileID: 0}
+  CurrentSelectedTile: {fileID: 0}
   hasMadeTurn: 0
   needReshuffle: 0
   isMatched: 0
+  invalidMove: 0
+  hasSearched: 0
   MatchSound: {fileID: 8300000, guid: c8e11bfa8656133418800c9d357ea9a6, type: 3}
   LastValue: 0
 --- !u!1 &1797651199
