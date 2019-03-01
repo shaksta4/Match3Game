@@ -114,7 +114,7 @@ MonoBehaviour:
   m_MinSize: {x: 683, y: 572}
   m_MaxSize: {x: 12008, y: 12072}
   vertical: 0
-  controlID: 103
+  controlID: 102
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -139,7 +139,7 @@ MonoBehaviour:
   m_MinSize: {x: 406, y: 572}
   m_MaxSize: {x: 8006, y: 12072}
   vertical: 1
-  controlID: 104
+  controlID: 115
 --- !u!114 &7
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -164,7 +164,7 @@ MonoBehaviour:
   m_MinSize: {x: 406, y: 448}
   m_MaxSize: {x: 8006, y: 8048}
   vertical: 0
-  controlID: 72
+  controlID: 116
 --- !u!114 &8
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -215,7 +215,7 @@ MonoBehaviour:
   m_MinSize: {x: 204, y: 448}
   m_MaxSize: {x: 4004, y: 8048}
   vertical: 1
-  controlID: 51
+  controlID: 117
 --- !u!114 &10
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -433,7 +433,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 4cc6feff54c6feff7cc6feffecc6feff72cafeff7acafeff02cbfeff7ecefeffaecefeffdecefeffeecefeff26cffeff46cffeff4ecffeff90e5feff00e9feff30e9feff7cecfeffa4ecfeffacecfeff32f3feffe6f9feffeef9feff16fafeff1efafeff46fafeff4efafeff56fafeff2406ffff3c06ffff5c06ffff380affff9421ffffc421ffffba34ffff3659ffff9061fffff482ffff5289ffff9297ffff84c9ffffecccffff40edffff48edffff4aedffff4af0ffffacf0ffffd4fbffff042e0000422f000042650000a86e0000
+      m_ExpandedIDs: 1c6affff367effff468effff0e98ffffd698ffff6ab2ffffcec9ffff0ecaffff6ecaffff8ecaffffd8caffff0cd8ffff5cd8ffff7cd8ffff84d8ffffb4d8ffffc4d8ffffdcd8ffffdadbffff32dcffff52dcffff5adcffffeae2ffff66e7ffff76e7ffffaee7ffffd6e7ffffeee7ffff60eaffffc0edffffecf0ffff62f7ffffbaf7ffffd2fbffffd4fbfffff4ffffff3a290000ee2e0000282f00007a2f00003e330000503700006c37000072370000643a00006a3a000090480000da480000e0480000624b0000bc4b0000ec50000014510000965300001e560000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -488,9 +488,9 @@ MonoBehaviour:
   m_isRotationLocked: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: -0.98890084, y: 0.20853922, z: -0.044921875}
+    m_Target: {x: 0.066827, y: 0.3794683, z: -0.16173074}
     speed: 2
-    m_Value: {x: -0.98890084, y: 0.20853922, z: -0.044921875}
+    m_Value: {x: 0.066827, y: 0.3794683, z: -0.16173074}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -522,9 +522,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 7.8050075
+    m_Target: 3.9923596
     speed: 2
-    m_Value: 7.8050075
+    m_Value: 3.9923596
   m_Ortho:
     m_Target: 1
     speed: 2
@@ -585,7 +585,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: 0
     y: 741
-    width: 1199
+    width: 1203
     height: 259
   m_PersistentViewDataDictionary: {fileID: 0}
   m_SearchFilter:
@@ -600,20 +600,20 @@ MonoBehaviour:
     m_ShowAllHits: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Scripts
+    - Assets/Prefabs
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Scripts
+  - Assets/Prefabs
   m_LastFoldersGridSize: -1
   m_LastProjectPath: D:\Users\Shakeel\Documents\MyTona Game
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 4a0b0000
-    m_LastClickedID: 2890
-    m_ExpandedIDs: 0000000068090000cc090000100b0000
+    m_SelectedIDs: b0260000
+    m_LastClickedID: 9904
+    m_ExpandedIDs: 000000000e26000072260000b6270000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -641,7 +641,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 0000000068090000cc090000100b0000
+    m_ExpandedIDs: 000000000e26000072260000b6270000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -666,8 +666,8 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: 5e090000
-    m_LastClickedInstanceID: 2398
+    m_SelectedInstanceIDs: d4fbffff
+    m_LastClickedInstanceID: -1068
     m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: c62300001c2a000000000000
     m_RenameOverlay:

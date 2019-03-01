@@ -21,6 +21,7 @@ public class SceneController : MonoBehaviour
         SceneManager.LoadScene(index);
     }
 
+
     public void Quit()
     {
 #if UNITY_EDITOR

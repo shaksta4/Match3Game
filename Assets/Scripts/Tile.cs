@@ -181,6 +181,9 @@ public class Tile : MonoBehaviour
 
     void OnMouseDown()
     {
-        GameObject.Find("BoardManager").GetComponent<BoardManager>().TileSelection(this);
+        if (!(Time.timeScale == 0))
+        {
+            GameObject.Find("BoardManager").GetComponent<BoardManager>().TileSelection(this);
+        }
     }
 }

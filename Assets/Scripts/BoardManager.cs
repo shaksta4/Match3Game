@@ -8,9 +8,9 @@ public class BoardManager : MonoBehaviour
     public Cell[,] cellsArray;
     public List<Tile> tiles = new List<Tile>();
 
+    public List<Tile> TestSet = new List<Tile>();
     public List<Tile> ListOfPossible = new List<Tile>();
     public List<Tile> MatchingSet = new List<Tile>();
-    public List<Tile> AboveTiles = new List<Tile>();
 
     public int GridWidth;
     public int GridHeight;
@@ -27,6 +27,8 @@ public class BoardManager : MonoBehaviour
     public bool isMatched = false;
     public bool invalidMove = false;
     public bool hasSearched = false;
+    public bool gameEnd = false;
+    public bool isPaused = false;
 
     public AudioClip MatchSound;
     public int LastValue = 0; // initial value so its not null
@@ -61,6 +63,16 @@ public class BoardManager : MonoBehaviour
         if (!needReshuffle && !hasSearched)
         {
             GetPossibleMatches();
+            GetPossibleMatchesArray();
+
+            /*------------- TO FIX TOMORROW  */
+            int RNG = Random.Range(0, ListOfPossible.Count);
+            ListOfPossible[RNG].GetComponent<ParticleSystem>().Play();
+
+            if(ListOfPossible.Count == 0)
+            {
+                gameEnd = true;
+            }
             hasSearched = true;
         }
 
@@ -87,7 +99,7 @@ public class BoardManager : MonoBehaviour
 
         if (isMatched)
         {
-            //SoundManager.instance.PlaySingle(MatchSound);
+            SoundManager.instance.PlaySingle(MatchSound);
             print("There is a match of:" + MatchingSet.Count + " tiles to resolve.");
 
             foreach (Cell c in cells)
@@ -276,7 +288,6 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    /* MUST CHANGE THE NAME OF THIS FUNCTION AND LOOK AT AGAIN CAREFULLY ---------------------------------------------------------------------*/
     List<Tile> GetMatches()
     {
         List<Tile> VerticalList = GetVerticalMatches();
@@ -405,7 +416,6 @@ public class BoardManager : MonoBehaviour
         return MatchingList;
     }
 
-    //Yet to add 5 and 6.
     void GetPossibleMatches()
     {
         foreach(Cell c in cells)
@@ -483,6 +493,171 @@ public class BoardManager : MonoBehaviour
             }
         }
     }
+
+    void GetPossibleMatchesArray()
+    {
+        int CurrentTileValue;
+        for(int y = 1; y < GridHeight-2; y++)
+        {
+            for(int x = 1; x < GridWidth-2; x++)
+            {
+                CurrentTileValue = cellsArray[y, x].tile.value;
+                //Where X is starting tile, x is other matches, O are other tiles.
+                //Horizontal
+                if(cellsArray[y,x+1].tile.value != CurrentTileValue)
+                {
+                    //OxO
+                    //XOx
+                    //OxO
+                    if (cellsArray[y, x + 2].tile.value == CurrentTileValue)
+                    {
+                        if (cellsArray[y + 1, x + 1].tile.value == CurrentTileValue)
+                        {
+                            if (!ListOfPossible.Contains(cellsArray[y + 1, x + 1].tile))
+                            {
+                                ListOfPossible.Add(cellsArray[y + 1, x + 1].tile);
+                            }
+                        }
+                        else if (cellsArray[y - 1, x + 1].tile.value == CurrentTileValue)
+                        {
+                            if (!ListOfPossible.Contains(cellsArray[y - 1, x + 1].tile))
+                            {
+                                ListOfPossible.Add(cellsArray[y - 1, x + 1].tile);
+                            }
+                        }
+                    }
+                }
+                //Vertical
+                if(cellsArray[y+1, x].tile.value != CurrentTileValue)
+                {
+                    // OxO
+                    // xOx
+                    // OXO
+                    if (cellsArray[y + 2, x].tile.value == CurrentTileValue)
+                    {
+                        if (cellsArray[y + 1, x + 1].tile.value == CurrentTileValue)
+                        {
+                            if (!ListOfPossible.Contains(cellsArray[y + 1, x + 1].tile))
+                            {
+                                ListOfPossible.Add(cellsArray[y + 1, x + 1].tile);
+                            }
+                        }
+                        else if (cellsArray[y + 1, x - 1].tile.value == CurrentTileValue)
+                        {
+                            if (!ListOfPossible.Contains(cellsArray[y + 1, x - 1].tile))
+                            {
+                                ListOfPossible.Add(cellsArray[y + 1, x - 1].tile);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /*void GetPossibleMatches1()
+    {
+        int CurrentTileValue;
+        for (int y = 2; y < GridHeight-3; y++)
+        {
+            for(int x = 2; x < GridWidth-3; x++)
+            {
+                CurrentTileValue = cellsArray[y, x].tile.value;
+                //Horizontal
+                if (cellsArray[y, x + 1].tile.value == CurrentTileValue)// && cellsArray[y, x + 2].tile.value != CurrentTileValue)
+                {
+                    if (cellsArray[y + 1, x + 2].tile.value == CurrentTileValue)
+                    {
+                        if (!ListOfPossible.Contains(cellsArray[y + 1, x + 2].tile))
+                        {
+                            ListOfPossible.Add(cellsArray[y + 1, x + 2].tile);
+                        }
+                    }
+                    else if (cellsArray[y, x + 3].tile.value == CurrentTileValue)
+                    {
+                        if (!ListOfPossible.Contains(cellsArray[y, x + 3].tile))
+                        {
+                            ListOfPossible.Add(cellsArray[y, x + 3].tile);
+                        }
+                    }
+                    else if (cellsArray[y - 1, x + 2].tile.value == CurrentTileValue)
+                    {
+                        if (!ListOfPossible.Contains(cellsArray[y - 1, x + 2].tile))
+                        {
+                            ListOfPossible.Add(cellsArray[y - 1, x + 2].tile);
+                        }
+                    }
+                    else if (cellsArray[y - 1, x - 1].tile.value == CurrentTileValue)
+                    {
+                        if (!ListOfPossible.Contains(cellsArray[y - 1, x - 1].tile))
+                        {
+                            ListOfPossible.Add(cellsArray[y - 1, x - 1].tile);
+                        }
+                    }
+                    else if (cellsArray[y, x - 2].tile.value == CurrentTileValue)
+                    {
+                        if (!ListOfPossible.Contains(cellsArray[y, x - 2].tile))
+                        {
+                            ListOfPossible.Add(cellsArray[y, x - 2].tile);
+                        }
+                    }
+                    else if (cellsArray[y + 1, x - 1].tile.value == CurrentTileValue)
+                    {
+                        if (!ListOfPossible.Contains(cellsArray[y + 1, x - 1].tile))
+                        {
+                            ListOfPossible.Add(cellsArray[y + 1, x - 1].tile);
+                        }
+                    }
+                }
+                //Vertical
+                if (cellsArray[y + 1, x].tile.value == CurrentTileValue)// && cellsArray[y + 2, x].tile.value != CurrentTileValue)
+                {
+                    if (cellsArray[y + 2, x + 1].tile.value == CurrentTileValue)
+                    {
+                        if (!ListOfPossible.Contains(cellsArray[y + 2, x + 1].tile))
+                        {
+                            ListOfPossible.Add(cellsArray[y + 2, x + 1].tile);
+                        }
+                    }
+                    else if (cellsArray[y + 3, x].tile.value == CurrentTileValue)
+                    {
+                        if (!ListOfPossible.Contains(cellsArray[y + 3, x].tile))
+                        {
+                            ListOfPossible.Add(cellsArray[y + 3, x].tile);
+                        }
+                    }
+                    else if (cellsArray[y + 2, x - 1].tile.value == CurrentTileValue)
+                    {
+                        if (!ListOfPossible.Contains(cellsArray[y + 2, x - 1].tile))
+                        {
+                            ListOfPossible.Add(cellsArray[y + 2, x - 1].tile);
+                        }
+                    }
+                    else if (cellsArray[y - 1, x + 1].tile.value == CurrentTileValue)
+                    {
+                        if (!ListOfPossible.Contains(cellsArray[y - 1, x + 1].tile))
+                        {
+                            ListOfPossible.Add(cellsArray[y - 1, x + 1].tile);
+                        }
+                    }
+                    else if (cellsArray[y - 2, x].tile.value == CurrentTileValue)
+                    {
+                        if (!ListOfPossible.Contains(cellsArray[y - 2, x].tile))
+                        {
+                            ListOfPossible.Add(cellsArray[y - 2, x].tile);
+                        }
+                    }
+                    else if (cellsArray[y - 1, x - 1].tile.value == CurrentTileValue)
+                    {
+                        if (!ListOfPossible.Contains(cellsArray[y - 1, x - 1].tile))
+                        {
+                            ListOfPossible.Add(cellsArray[y - 1, x - 1].tile);
+                        }
+                    }
+                }
+            }
+        }
+    }*/
 
     void ResetBoard()
     {

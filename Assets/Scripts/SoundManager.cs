@@ -7,7 +7,6 @@ public class SoundManager : MonoBehaviour
     public AudioSource SfxSource;
     public AudioSource MusicSource;
     public static SoundManager instance = null;
-    public GameObject mutebutton;
     public static bool isMuted;
 
     void Awake()
