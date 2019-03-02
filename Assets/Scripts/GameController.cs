@@ -7,6 +7,7 @@ public class GameController : MonoBehaviour
 {
     public static GameController instance = null;
 
+    public bool End = false;
     public bool Playing = false;
     public bool Menu = false;
     public bool Paused = false;
@@ -14,10 +15,13 @@ public class GameController : MonoBehaviour
     public GameObject FooterCanvas;
     GameObject mutebutton;
     GameObject returnbutton;
+
     GameObject pausepanel;
     GameObject gamepanel;
     GameObject pausetext;
     GameObject gamecanvas;
+
+    GameObject endgamepanel;
 
     void Awake()
     {
@@ -52,6 +56,8 @@ public class GameController : MonoBehaviour
 
                 gamepanel = GameObject.FindGameObjectWithTag("GamePanel");
                 pausetext = gamepanel.transform.Find("PauseText").gameObject;
+
+                endgamepanel = gamecanvas.transform.Find("GameEndPanel").gameObject;
             }
             if(!(returnbutton.activeSelf))
             {
@@ -73,10 +79,32 @@ public class GameController : MonoBehaviour
                 pausepanel.SetActive(false);
                 pausetext.SetActive(true);
             }
-            if(Input.GetKeyDown(KeyCode.Space))
+            if(Input.GetKeyDown(KeyCode.P))
             {
                 print("Pausing!!");
                 TogglePause();
+            }
+            if (endgamepanel.activeSelf)
+            {
+                endgamepanel.SetActive(false);
+            }
+        }
+        if(Menu)
+        {
+            End = false;
+
+            if(returnbutton.activeSelf)
+            {
+                returnbutton.SetActive(false);
+            }
+        }
+        if(End)
+        {
+            Playing = false;
+
+            if (!endgamepanel.activeSelf)
+            {
+                endgamepanel.SetActive(true);
             }
         }
     }

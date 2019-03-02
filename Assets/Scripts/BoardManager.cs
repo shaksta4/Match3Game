@@ -4,16 +4,17 @@ using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
+    public StatsManager sm;
     public List<Cell> cells = new List<Cell>();
     public Cell[,] cellsArray;
     public List<Tile> tiles = new List<Tile>();
 
-    public List<Tile> TestSet = new List<Tile>();
     public List<Tile> ListOfPossible = new List<Tile>();
     public List<Tile> MatchingSet = new List<Tile>();
 
     public int GridWidth;
     public int GridHeight;
+    int HintTileIndex;
 
     public GameObject tilePrefab;
     public GameObject cell;
@@ -33,24 +34,58 @@ public class BoardManager : MonoBehaviour
     public AudioClip MatchSound;
     public int LastValue = 0; // initial value so its not null
 
+    public float HintTimer = 8f;
+    public float CountdownTimer = 15f;
+    public float GameTimer = 0;
+    public float timerincrease = 1f;
+
 
     void Awake()
     {
         CreateBoard();
         FindCellNeighbours();
-        MatchingSet = GetMatches();
         print("Initially, this is how many matches found:" + MatchingSet.Count);
+    }
+
+    void Start()
+    {
+        MatchingSet = GetMatches();
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (!gameEnd)
+        {
+            GameTimer += Time.deltaTime;
+            CountdownTimer -= Time.deltaTime;
+            HintTimer -= Time.deltaTime;
+
+            sm.gameTimer = GameTimer;
+            sm.timerValue = CountdownTimer;
+        }
+
         CopyCellNeighbourToTile();
+
+        if (CountdownTimer <= 0)
+        {
+            gameEnd = true;
+        }
+
+        if(gameEnd)
+        {
+            GameController.instance.End = true;
+        }
 
         if (MatchingSet.Count > 0)
         {
             if (hasMadeTurn)
             {
+                foreach (Tile t in MatchingSet)
+                {
+                    t.toBeNulled = true;
+                }
+
                 isMatched = true;
             }
             if (!hasMadeTurn)
@@ -64,20 +99,38 @@ public class BoardManager : MonoBehaviour
         {
             GetPossibleMatches();
             GetPossibleMatchesArray();
+            HintTileIndex = Random.Range(0, ListOfPossible.Count);
+            print("The index i will turn on is: " + HintTileIndex);
 
-            /*------------- TO FIX TOMORROW  */
-            int RNG = Random.Range(0, ListOfPossible.Count);
-            ListOfPossible[RNG].GetComponent<ParticleSystem>().Play();
+            hasSearched = true;
+        }
 
-            if(ListOfPossible.Count == 0)
+        if (hasSearched)
+        {
+            if (ListOfPossible.Count == 0)
             {
                 gameEnd = true;
             }
-            hasSearched = true;
+            else
+            {
+                if (HintTimer <= 0 && !ListOfPossible[HintTileIndex].GetComponent<ParticleSystem>().isPlaying)
+                {
+                    ListOfPossible[HintTileIndex].GetComponent<ParticleSystem>().Play();
+                }
+            }
         }
 
         if (hasMadeTurn)
         {
+            //Meaning if the code to turn the particle effect on actually triggered, then stop it.
+            if (ListOfPossible.Count > 0)
+            {
+                if (ListOfPossible[HintTileIndex].GetComponent<ParticleSystem>().isPlaying)
+                {
+                    print("Turning off the hint");
+                    ListOfPossible[HintTileIndex].GetComponent<ParticleSystem>().Stop();
+                }
+            }
             //Finds matches.
             MatchingSet = GetMatches();
 
@@ -89,7 +142,7 @@ public class BoardManager : MonoBehaviour
 
         if(invalidMove)
         {
-            StatsManager.numTurns--;
+            sm.numTurns--;
             CurrentSelectedTile.SwapTile(PrevSelectedTile);
             print("Illegal move, sorry");
             ResetBoard();
@@ -100,27 +153,29 @@ public class BoardManager : MonoBehaviour
         if (isMatched)
         {
             SoundManager.instance.PlaySingle(MatchSound);
+            //Reset hint timer.
+            HintTimer = 10.0f;
             print("There is a match of:" + MatchingSet.Count + " tiles to resolve.");
 
             foreach (Cell c in cells)
             {
                 if (c.tile.toBeNulled)
                 {
-                    //AboveTiles.AddRange(c.tile.GetAboveTilesInColumn(cells));
                     //Get the tile's current value, and create a new tile of a different value.
                     int ValueToAvoid = c.tile.value;
 
-                    StatsManager.scoreValue += c.tile.tileScore;
+                    sm.scoreValue += c.tile.tileScore;
                     //If more than 3 in a row
                     if (MatchingSet.Count > 3)
                     {
                         //Add bonus score
-                        StatsManager.scoreValue += 25;
+                        sm.scoreValue += 10;
                     }
                     //Create a tile avoiding both values!
                     c.tile.CreateTile(ValueToAvoid, LastValue);
-                    //print("Creating new tile with the value of "+c.tile.value+". It is a "+c.tile.GetComponent<SpriteRenderer>().sprite.name+" coloured sprite");
+                    print("Creating new tile with the value of "+c.tile.value+". It is a "+c.tile.GetComponent<SpriteRenderer>().sprite.name+" coloured sprite");
                     LastValue = c.tile.value;
+                    CountdownTimer += timerincrease;
                 }
             }
 
@@ -267,7 +322,7 @@ public class BoardManager : MonoBehaviour
             */
 
             //print("Invalid move was made before");
-            StatsManager.numTurns++;
+            sm.numTurns++;
 
             //Reset neighbours after swapping. IN UPDATE, IT SETS TILES NEIGHBOURS AGAIN.
             foreach (Cell c in cells)
@@ -308,12 +363,6 @@ public class BoardManager : MonoBehaviour
                 CombinedList.Add(t);
             }
         }
-
-        foreach(Tile t in CombinedList)
-        {
-            t.toBeNulled = true;
-        }
-
         return CombinedList;
     }
 
@@ -497,19 +546,33 @@ public class BoardManager : MonoBehaviour
     void GetPossibleMatchesArray()
     {
         int CurrentTileValue;
-        for(int y = 1; y < GridHeight-2; y++)
+        for(int y = 0; y < GridHeight-2; y++)
         {
-            for(int x = 1; x < GridWidth-2; x++)
+            for(int x = 0; x < GridWidth-2; x++)
             {
                 CurrentTileValue = cellsArray[y, x].tile.value;
                 //Where X is starting tile, x is other matches, O are other tiles.
                 //Horizontal
                 if(cellsArray[y,x+1].tile.value != CurrentTileValue)
                 {
+                    if(y == 0)
+                    {
+                        if(cellsArray[y, x+2].tile.value == CurrentTileValue)
+                        {
+                            if (cellsArray[y + 1, x + 1].tile.value == CurrentTileValue)
+                            {
+                                if (!ListOfPossible.Contains(cellsArray[y + 1, x + 1].tile))
+                                {
+                                    ListOfPossible.Add(cellsArray[y + 1, x + 1].tile);
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     //OxO
                     //XOx
                     //OxO
-                    if (cellsArray[y, x + 2].tile.value == CurrentTileValue)
+                    else if (cellsArray[y, x + 2].tile.value == CurrentTileValue)
                     {
                         if (cellsArray[y + 1, x + 1].tile.value == CurrentTileValue)
                         {
@@ -530,10 +593,25 @@ public class BoardManager : MonoBehaviour
                 //Vertical
                 if(cellsArray[y+1, x].tile.value != CurrentTileValue)
                 {
+                    if(x == 0)
+                    {
+                        if(cellsArray[y+2, x].tile.value == CurrentTileValue)
+                        {
+                            if (cellsArray[y + 1, x + 1].tile.value == CurrentTileValue)
+                            {
+                                if (!ListOfPossible.Contains(cellsArray[y + 1, x + 1].tile))
+                                {
+                                    ListOfPossible.Add(cellsArray[y + 1, x + 1].tile);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
                     // OxO
                     // xOx
                     // OXO
-                    if (cellsArray[y + 2, x].tile.value == CurrentTileValue)
+                    else if (cellsArray[y + 2, x].tile.value == CurrentTileValue)
                     {
                         if (cellsArray[y + 1, x + 1].tile.value == CurrentTileValue)
                         {

@@ -15,7 +15,7 @@ public class Tile : MonoBehaviour
     public bool toBeNulled;
     public bool canFall;
 
-    public int tileScore = 15;
+    public int tileScore = 5;
 
     private SpriteRenderer SpriteRenderVar;
 
@@ -119,7 +119,6 @@ public class Tile : MonoBehaviour
                 }
             }
         }
-
         return myList;
     }
 
@@ -181,7 +180,7 @@ public class Tile : MonoBehaviour
 
     void OnMouseDown()
     {
-        if (!(Time.timeScale == 0))
+        if (!GameController.instance.Paused)
         {
             GameObject.Find("BoardManager").GetComponent<BoardManager>().TileSelection(this);
         }
