@@ -4,62 +4,52 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
+    //variables
     public List<Tile> Neighbours = new List<Tile>();
     public Sprite[] MySpriteImages = new Sprite[8];
-
     public Sprite HighlightSprite;
 
-    GameObject highlighter;
+    public bool isSelected, toBeNulled;
+    public int TileScore = 5;
+    public int value;
 
-    public bool isSelected;
-    public bool toBeNulled;
-    public bool canFall;
-
-    public int tileScore = 5;
-
+    private GameObject Highlighter;
     private SpriteRenderer SpriteRenderVar;
 
-    public int value;
 
     void Awake()
     {
         CreateTile();
     }
 
-    // MIGHT NEED TO USE TO CREATE NEW TILES TO ADD INTO NULLED PLACS
-   /* void Start()
-    {
-        CreateTile();
-    }
-    */
-
-    // Update is called once per frame [TILE]
     void Update()
     {
+        //If this tile is selected
         if (isSelected)
         {
-            //gameObject.GetComponent<SpriteRenderer>().color = Color.gray;
-            if (highlighter == null)
+            //If it doesn't have a highlighter, create one and set it at its position.
+            if (Highlighter == null)
             {
-                highlighter = new GameObject();
-                highlighter.AddComponent<SpriteRenderer>();
-                highlighter.GetComponent<SpriteRenderer>().sprite = HighlightSprite;
-                highlighter.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.25f);// Color.gray;
-                highlighter.transform.SetPositionAndRotation(this.transform.position, Quaternion.identity);
+                Highlighter = new GameObject();
+                Highlighter.AddComponent<SpriteRenderer>();
+                Highlighter.GetComponent<SpriteRenderer>().sprite = HighlightSprite;
+                Highlighter.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.25f);// Color.gray;
+                Highlighter.transform.SetPositionAndRotation(this.transform.position, Quaternion.identity);
             }
         }
+        //If not selected
         else
         {
-            //gameObject.GetComponent<SpriteRenderer>().color = Color.white;
-            if(highlighter != null)
+            //If it has a highlighter, destroy it.
+            if(Highlighter != null)
             {
-                Destroy(highlighter);
-                highlighter = null;
+                Destroy(Highlighter);
+                Highlighter = null;
             }
         }
     }
 
-    //Used to create or Recreate tiles [TILE] 
+    /*This function is used to set a tile's sprite and value. It uses RNG to determine which sprite and value it has*/
     public void CreateTile() 
     {
         int RandomTileSelector = Random.Range(0, MySpriteImages.Length);
@@ -72,6 +62,8 @@ public class Tile : MonoBehaviour
         toBeNulled = false;
     }
 
+    /*This function is an overload of CreateTile. It takes in two integers which are values to avoid. If the RNG 
+     lands on either number, it increments and sets the next sprite and value instead.*/
     public void CreateTile(int CurrentValue, int PreviousValue)
     {
         int RandomTileSelector = Random.Range(0, MySpriteImages.Length-1);
@@ -105,47 +97,7 @@ public class Tile : MonoBehaviour
         return false;
     }
 
-    public List<Tile> GetAboveTilesInColumn(List<Cell> cells)
-    {
-        List<Tile> myList = new List<Tile>();
-
-        foreach(Cell c in cells)
-        {
-            if (c.tile.transform.position.x == this.transform.position.x && c.tile.transform.position.y > this.transform.position.y)
-            {
-                if(!c.tile.toBeNulled)
-                {
-                    myList.Add(c.tile);
-                }
-            }
-        }
-        return myList;
-    }
-
-
-    //tn.transform.position.x == t.transform.position.x && tn.transform.position.y > t.transform.position.y
-
-    public void CheckCanFall()
-    {
-        foreach(Tile t in Neighbours)
-        {
-            if(t.toBeNulled)
-            {
-                if(t.transform.position.x == this.transform.position.x)
-                {
-                    if(t.transform.position.y < this.transform.position.y)
-                    {
-                        canFall = true;
-                    }
-                    else
-                    {
-                        canFall = false;
-                    }
-                }
-            }
-        }
-    }
-
+    /*This function takes in a tile, it swaps this tile's position and parents with, the parameter tile*/
     public void SwapTile(Tile CurrentTile)
     {
         Vector3 PositionBuffer;
@@ -178,6 +130,7 @@ public class Tile : MonoBehaviour
         isSelected = !isSelected;
     }
 
+    /*When clicked, if game is not paused, call TileSelection from the BoardManager*/
     void OnMouseDown()
     {
         if (!GameController.instance.Paused)

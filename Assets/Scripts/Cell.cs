@@ -4,34 +4,20 @@ using UnityEngine;
 
 public class Cell : MonoBehaviour
 {
+    //public vars
     public List<Cell> Neighbours = new List<Cell>();
     public Tile tile;
     public GameObject tilePrefab;
+    public Cell LeftCell, BelowCell;
+    public bool isLeftEdge, isBottomEdge;
 
-    public Cell LeftCell;
-    public Cell BelowCell;
-
-    public bool isLeftEdge;
-    public bool isBottomEdge;
-
-    public int xPos, yPos;
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    //Initialises a cell
+    //private vars
+    private int xPos, yPos;
+   
+    //Initialises a cell by setting its xPos and yPos variables, and sets whether its a left edge or bottom edge cell. It also generates a new tile for the cell.
     public void Initialise(int xPos, int yPos)
     {
+        //Sets xPos and yPos. 
         this.xPos = xPos;
         this.yPos = yPos;
 
@@ -47,6 +33,7 @@ public class Cell : MonoBehaviour
         tile = GenerateNewTile();
     }
 
+    /*This function instantiates a tile, sets it's position and returns it.*/
     public Tile GenerateNewTile()
     {
         GameObject g = Instantiate(tilePrefab, this.transform.position, Quaternion.identity) as GameObject;
@@ -72,16 +59,5 @@ public class Cell : MonoBehaviour
             return true;
         }
         return false;
-    }
-
-    //Is called when a tile intersects a cell.
-    void OnCollisionEnter2D(Collision2D col)
-    {
-        print("collision!!");
-    }
-
-    public string toString()
-    {
-        return "This cell is a position: " + xPos + ", " + yPos;
     }
 }

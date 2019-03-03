@@ -7,24 +7,23 @@ public class GameController : MonoBehaviour
 {
     public static GameController instance = null;
 
+    //Public bools
     public bool End = false;
     public bool Playing = false;
     public bool Menu = false;
     public bool Paused = false;
+    public bool InvalidMove = false;
 
+    //Gameobjects
     public GameObject FooterCanvas;
-    GameObject mutebutton;
-    GameObject returnbutton;
-
-    GameObject pausepanel;
-    GameObject gamepanel;
-    GameObject pausetext;
-    GameObject gamecanvas;
-
-    GameObject endgamepanel;
+    GameObject GameCanvas;
+    GameObject MuteButton, ReturnButton;
+    GameObject PausePanel, GamePanel, GameEndPanel;
+    GameObject PauseText, InvalidText;
 
     void Awake()
     {
+        //Object is a singleton.
         if (instance == null)
         {
             instance = this;
@@ -40,75 +39,94 @@ public class GameController : MonoBehaviour
 
     void Start()
     {
-        mutebutton = FooterCanvas.transform.Find("MuteButton").gameObject;
-        returnbutton = FooterCanvas.transform.Find("ReturnButton").gameObject;
+        MuteButton = FooterCanvas.transform.Find("MuteButton").gameObject;
+        ReturnButton = FooterCanvas.transform.Find("ReturnButton").gameObject;
     }
 
     // Update is called once per frame
     void Update()
     {
+        //If game is playing
         if(Playing)
         {
-            if(gamecanvas == null)
+            //Find gameobjects.
+            if(GameCanvas == null)
             {
-                gamecanvas = GameObject.FindGameObjectWithTag("GameCanvas");
-                pausepanel = gamecanvas.transform.Find("PausePanel").gameObject;
+                GameCanvas = GameObject.FindGameObjectWithTag("GameCanvas");
+                PausePanel = GameCanvas.transform.Find("PausePanel").gameObject;
 
-                gamepanel = GameObject.FindGameObjectWithTag("GamePanel");
-                pausetext = gamepanel.transform.Find("PauseText").gameObject;
+                GamePanel = GameObject.FindGameObjectWithTag("GamePanel");
+                PauseText = GamePanel.transform.Find("PauseText").gameObject;
+                InvalidText = GamePanel.transform.Find("IllegalText").gameObject;
 
-                endgamepanel = gamecanvas.transform.Find("GameEndPanel").gameObject;
+                GameEndPanel = GameCanvas.transform.Find("GameEndPanel").gameObject;
             }
-            if(!(returnbutton.activeSelf))
+            //If player made invalid move
+            if (InvalidMove)
             {
-                returnbutton.SetActive(true);
+                print("Invalid move, starting coroutine");
+                StartCoroutine(ShowPopup(2)); // Show pop up for 2 seconds.
+                InvalidMove = false;
             }
-            if(mutebutton.activeSelf)
+            //If return button is not active
+            if (!(ReturnButton.activeSelf))
             {
-                mutebutton.SetActive(false);
+                ReturnButton.SetActive(true);
             }
+            //If mute button is active
+            if(MuteButton.activeSelf)
+            {
+                MuteButton.SetActive(false);
+            }
+            //If the game is paused, set mute button and pause panel active.
             if(Paused)
             {
-                mutebutton.SetActive(true);
-                pausepanel.SetActive(true);
-                pausetext.SetActive(false);
+                MuteButton.SetActive(true);
+                PausePanel.SetActive(true);
+                PauseText.SetActive(false);
             }
+            //If not paused, flip
             if (!Paused)
             {
-                mutebutton.SetActive(false);
-                pausepanel.SetActive(false);
-                pausetext.SetActive(true);
+                MuteButton.SetActive(false);
+                PausePanel.SetActive(false);
+                PauseText.SetActive(true);
             }
+            //If player presses P, pause.
             if(Input.GetKeyDown(KeyCode.P))
             {
                 print("Pausing!!");
                 TogglePause();
             }
-            if (endgamepanel.activeSelf)
+            //If game end panel is active, deactivate it
+            if (GameEndPanel.activeSelf)
             {
-                endgamepanel.SetActive(false);
-            }
+                GameEndPanel.SetActive(false);
+            } 
         }
+        //If user is in menu
         if(Menu)
         {
             End = false;
-
-            if(returnbutton.activeSelf)
+            //Remove return button.
+            if(ReturnButton.activeSelf)
             {
-                returnbutton.SetActive(false);
+                ReturnButton.SetActive(false);
             }
         }
+        //If game ended
         if(End)
         {
-            Playing = false;
-
-            if (!endgamepanel.activeSelf)
+            //Activate the game end panel
+            if (!GameEndPanel.activeSelf)
             {
-                endgamepanel.SetActive(true);
+                GameEndPanel.SetActive(true);
             }
+            End = false;
         }
     }
 
+    /*This function toggles the pause in game by setting the timescale between 0 and 1.*/
     void TogglePause()
     {
         //If not paused, set paused
@@ -125,5 +143,16 @@ public class GameController : MonoBehaviour
             Time.timeScale = 1;
             Paused = false;
         }
+    }
+
+    /*This function is a coroutine that pops up the InvalidText object on the screen for 'delay' amount of seconds.*/
+    IEnumerator ShowPopup(int delay)
+    {
+        if (!InvalidText.activeSelf)
+        {
+            InvalidText.SetActive(true);
+        }
+        yield return new WaitForSeconds(delay);
+        InvalidText.SetActive(false);
     }
 }
